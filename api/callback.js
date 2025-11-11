@@ -21,5 +21,6 @@ export default async function handler(req, res) {
   });
 
   const data = await tokenRes.json();
-  res.redirect(`https://your-github-username.github.io/spotify-ui?access_token=${data.access_token}&refresh_token=${data.refresh_token}`);
+  res.redirect(`https://aravmehta.github.io/spotify-player?access_token=${data.access_token}&refresh_token=${data.refresh_token}`);
+
 }
