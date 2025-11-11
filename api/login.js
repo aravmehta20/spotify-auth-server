@@ -1,3 +1,5 @@
+import fetch from 'node-fetch';
+
 export default function handler(req, res) {
   const client_id = process.env.SPOTIFY_CLIENT_ID;
   const redirect_uri = process.env.SPOTIFY_REDIRECT_URI;
