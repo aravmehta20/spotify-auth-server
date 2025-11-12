@@ -6,6 +6,13 @@ export default function handler(req, res) {
   const scope = 'streaming user-read-email user-read-private user-modify-playback-state user-read-playback-state';
   const state = Math.random().toString(36).substring(2, 15);
 
-  const authUrl = `https://accounts.spotify.com/authorize?response_type=code&client_id=${client_id}&scope=${encodeURIComponent(scope)}&redirect_uri=${encodeURIComponent(redirect_uri)}&state=${state}`;
+  const authUrl =
+  `https://accounts.spotify.com/authorize?response_type=code` +
+  `&client_id=${client_id}` +
+  `&scope=${encodeURIComponent(scope)}` +
+  `&redirect_uri=${encodeURIComponent(redirect_uri)}` +
+  `&state=${state}` +
+  `&show_dialog=true`; // <-- important
+
   res.redirect(authUrl);
 }
