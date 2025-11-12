@@ -1,41 +1,53 @@
+import querystring from 'querystring';
+import fetch from 'node-fetch';
+// vercel env var (Project → Settings → Environment Variables)
+UI_URL=https://<your-username>.github.io/<your-repo>
+
+// api/callback.js
+import querystring from "querystring";
+import fetch from "node-fetch";
+
 export default async function handler(req, res) {
-  try {
-    const code = req.query.code;
-    if (!code) return res.status(400).send('Missing code');
+  const code = req.query.code || null;
+  const client_id = process.env.SPOTIFY_CLIENT_ID;
+  const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
+  const redirect_uri = process.env.SPOTIFY_REDIRECT_URI;
+  const code = req.query.code;
+  if (!code) return res.status(400).send("Missing code");
 
-    const { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI, UI_URL } = process.env;
-
-    const body = new URLSearchParams({
-      code,
-      redirect_uri: SPOTIFY_REDIRECT_URI,
+  const tokenRes = await fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST',
+  const r = await fetch("https://accounts.spotify.com/api/token", {
+    method: "POST",
+    headers: {
+      'Authorization': 'Basic ' + Buffer.from(client_id + ':' + client_secret).toString('base64'),
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Authorization: "Basic " + Buffer.from(
+        process.env.SPOTIFY_CLIENT_ID + ":" + process.env.SPOTIFY_CLIENT_SECRET
+      ).toString("base64"),
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: querystring.stringify({
+      code: code,
+      redirect_uri: redirect_uri,
       grant_type: 'authorization_code',
-    });
+      code,
+      redirect_uri: process.env.SPOTIFY_REDIRECT_URI,
+      grant_type: "authorization_code",
+    }),
+  });
 
-    const tokenRes = await fetch('https://accounts.spotify.com/api/token', {
-      method: 'POST',
-      headers: {
-        Authorization: 'Basic ' + Buffer.from(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`).toString('base64'),
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body
-    });
-
-    const data = await tokenRes.json();
-    if (!tokenRes.ok || !data.access_token) {
-      console.error('Token exchange failed', tokenRes.status, data);
-      return res.status(502).send('Token exchange failed');
-    }
-
-    const qs = new URLSearchParams({
-      access_token: data.access_token,
-      refresh_token: data.refresh_token || '',
-      src: 'gamma' // marker to verify which project handled the callback
-    }).toString();
-
-    console.log('Redirecting to UI_URL:', UI_URL);
-    return res.redirect(`${UI_URL}?${qs}`);
-  } catch (e) {
-    console.error('Callback error', e);
-    return res.status(500).send('Internal error');
+  const data = await tokenRes.json();
+  res.redirect(`https://aravmehta20.github.io/spotifyplayer?access_token=${data.access_token}&refresh_token=${data.refresh_token}`);
+  const data = await r.json();
+  if (!data.access_token) {
+    console.error("Token exchange failed:", data);
+    return res.status(500).send("Token exchange failed");
   }
+
+  const qs = querystring.stringify({
+    access_token: data.access_token,
+    refresh_token: data.refresh_token || "",
+  });
+  res.redirect(`${process.env.UI_URL}?${qs}`);
 }
