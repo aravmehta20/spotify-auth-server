@@ -9,7 +9,8 @@ export default function handler(req, res) {
     'user-read-email',
     'user-read-private',
     'user-modify-playback-state', // <-- needed for play/pause/next/prev
-    'user-read-playback-state'
+    'user-read-playback-state',
+    'user-read-currently-playing'
   ].join(' ');
 
   const state = Math.random().toString(36).slice(2);
